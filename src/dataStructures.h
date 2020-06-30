@@ -13,8 +13,7 @@ struct DataFrame {                      // represents the available sensor infor
     std::vector<cv::DMatch> kptMatches; // keypoint matches between previous and current frame
 };
 
-// //Make enums of all the option, increment enum variable, put conditions 
- 
+//Make enums of all the option, increment enum variable, put conditions 
 // enum Detectors{
 //     detector_SHITOMASI = 1,
 //     detector_HARRIS,
@@ -45,6 +44,21 @@ struct DataFrame {                      // represents the available sensor infor
 //     selector_SEL_NN = 1,
 //     selector_SEL_KNN
 // };
+
+
+//Learned new conceppts:
+//1. Macros to define enums clases and string equivalent in c & c++, using # and ## operators
+//https://stackoverflow.com/questions/147267/easy-way-to-use-variables-of-enum-types-as-string-in-c
+//https://stackoverflow.com/questions/15424218/c-class-factory-macro
+
+
+//2. Macro expanders:
+//https://stackoverflow.com/questions/3019609/any-utility-to-test-expand-c-c-define-macros
+//https://stackoverflow.com/questions/5900419/c-macro-expander
+
+//3. Finally added inline to remove multiple definition ld error due to header file functions definitions
+//https://stackoverflow.com/questions/41597744/why-am-i-getting-a-multiple-definition-error-how-do-i-fix-it
+
 
 // expansion macro for enum value definition
 #define ENUM_VALUE(name,assign) name assign,
@@ -79,21 +93,6 @@ struct DataFrame {                      // represents the available sensor infor
     ENUM_DEF(ENUM_STRCMP) \
     return (EnumType)0; /* handle input error */ \
   } \
-
-
-//Learned new conceppts:
-//1. Macros to define enums clases and string equivalent in c & c++, using # and ## operators
-//https://stackoverflow.com/questions/147267/easy-way-to-use-variables-of-enum-types-as-string-in-c
-//https://stackoverflow.com/questions/15424218/c-class-factory-macro
-
-
-//2. Macro expanders:
-//https://stackoverflow.com/questions/3019609/any-utility-to-test-expand-c-c-define-macros
-//https://stackoverflow.com/questions/5900419/c-macro-expander
-
-//3. Finally added inline to remove multiple definition error due to header file functions
-//https://stackoverflow.com/questions/41597744/why-am-i-getting-a-multiple-definition-error-how-do-i-fix-it
-
 
 
 //Declare and Define the detector enum
@@ -147,7 +146,18 @@ DEFINE_ENUM(Matchers,MATCHER_ENUM);
 DECLARE_ENUM(Selectors,SELECTOR_ENUM);
 DEFINE_ENUM(Selectors,SELECTOR_ENUM);
 
+inline std::string get_right_of_delim(std::string const& str, std::string const& delim)
+{
+  return str.substr(str.find(delim) + delim.size());
+}
 
-
+//Word length for logfiles
+#define SWL_SERIAL_NO     7
+#define SWL_DETECTOR      13
+#define SWL_DESCRIPTOR    14
+#define SWL_TL_KEYPOINTS  18
+#define SWL_TL_MATCHES    16
+#define SWL_TL_TIME       17
+#define SWL_TL_RATIO      23
 
 #endif /* dataStructures_h */
