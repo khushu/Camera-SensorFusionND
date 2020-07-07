@@ -156,8 +156,9 @@ inline std::string get_right_of_delim(std::string const& str, std::string const&
 #define SWL_DETECTOR      13
 #define SWL_DESCRIPTOR    14
 #define SWL_TL_KEYPOINTS  18
+#define SWL_TIME_P_KEYP   21
 #define SWL_TL_MATCHES    16
-#define SWL_TL_TIME       17
-#define SWL_TL_RATIO      23
+#define SWL_TIME_P_MATCH  21
+#define SWL_TL_PPLIN_TME  40
 
 #endif /* dataStructures_h */

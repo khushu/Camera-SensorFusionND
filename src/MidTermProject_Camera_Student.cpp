@@ -17,8 +17,8 @@
 #include "dataStructures.h"
 
 
-/* Flag for compiling the code for logging the results in the csv files */
-#define _GENERATE_RESULTS_FILE_        // Result files to be created 
+/* Flag for compiling the code for logging the results in the csv and test files */
+#define _GENERATE_RESULTS_FILE_        
 
 #ifdef _GENERATE_RESULTS_FILE_
 //For creating thge directories
@@ -48,7 +48,7 @@ int main(int argc, const char *argv[]){
     string imgFileType = ".png";
     int imgStartIndex = 0;          // first file index to load (assumes Lidar and camera names 
                                     // have identical naming convention)
-    int imgEndIndex = 9;            // last file index to load
+    int imgEndIndex  = 9;           // last file index to load
     int imgFillWidth = 4;           // no. of digits which make up the file index (e.g. img-0001.png)
 
     // misc
@@ -58,16 +58,15 @@ int main(int argc, const char *argv[]){
 
 
     bool bVis = false;              // visualize results
-    bool bVehicleBBox = true;       // visualize only vehicle keypoints
+    bool bVehicleBBox = false;      // visualize only vehicle keypoints
     bool bConsoleLogging = false;   // Console minimum logging
     
 
 
-    double totalTime    = 0;        // Total time taken
-    int keypointTotal   = 0;        // Total keypoints
-    int matchesTotal    = 0;        // Total matches
+    
     int iCombinationIndex = 0;      // Combination index for Sl number for the outer loop
 
+    
     //Name of the files created
     string resultFileName(resutBasePath + "FinalResults.txt");
 
@@ -99,27 +98,27 @@ int main(int argc, const char *argv[]){
     //TODO:
 
     //Clean up the code:
+    //8. CSV File operation 
+        //Final txt file mostly done... (Once the crash in matches function fixes, 
+        //this will be fiex, the ternary operatopr needs to be updated)
+        //CSV File to be done from scratch
+            //For each pair of detector / descriptor log for a table: Form a CSV File: (for logging the top 3-5 in each category)
+            //1. Method pair, Number of keypoints image, and Distribution of neighbourhood size, feature/keypoint size(), variance, mean, distribution, time taken for tetector and discriptor 
+            //avarage time taken per keypoint over the entire method pair (Accumulate)
+            //2. Number of match keypoints 1-2, 2-3, 3-4.. matched, time taken per keypoint
 
-     //8. CSV File operation 
-        //Put counters and timers for the table 
-        //For each pair of detector / descriptor log for a table: Form a CSV File: (for logging the top 3-5 in each category)
-        //One file each for 1 & 2 
-        //1. Method pair, Number of keypoints image, and Distribution of neighbourhood size, feature/keypoint size(), variance, mean, distribution, time taken for tetector and discriptor 
-        //avarage time taken per keypoint over the entire method pair (Accumulate)
-        //2. Number of match keypoints 1-2, 2-3, 3-4.. matched, time taken per keypoint
     //13. Run the detector type and other loops
     //14. Rectify bVis why this does not work
-    //3. The way to go about each of the activities, make a switch between point number 1-6 and then 7-9
-    //5. Clean up the loop for enum
-    //6. Clean up the cv::waitkey mess, make it switchable. 
-    //7. Integrate a logging header (spdlog, as external)
-    //9. C++ Design as much.. (see how that can be thread safe???)
+    //3.  The way to go about each of the activities, make a switch between point number 1-6 and then 7-9
+    //5.  Clean up the loop for enum
+    //6.  Clean up the cv::waitkey mess, make it switchable. 
+    //7.  Integrate a logging header (spdlog, as external)
+    //9.  C++ Design as much.. (see how that can be thread safe???)
     //10. How this can run in distributed settings ( and state machine settings??)
     //11. Mostly return only error codes, not values of the functions, return value must be through pass by refrence
-    //12. Crash in macher when we run the for loop in different combinations( brief and shitomasi as en example)
-    //2. Clean up the comments (Later)
-    
-   
+    //12. Crash in macher when we run the for loop in different combinations(brief and shitomasi as en example)
+    //2.  Clean up the comments (Later)
+       
 
 
     //For running the loops
@@ -146,9 +145,6 @@ int main(int argc, const char *argv[]){
     //     selector(selector_SEL_KNN,) 
 
 
-
-
-
 #ifdef _GENERATE_RESULTS_FILE_
     //Final file for total sum per pair to compare:
     ofstream resultFile;
@@ -156,12 +152,17 @@ int main(int argc, const char *argv[]){
     resultFile.open(resultFileName.c_str(),ios::out);
     
     //Append the header
-    resultFile<<setw(SWL_SERIAL_NO)<<std::right<<"Sl No |"<<std::setw(SWL_DETECTOR)<<std::right<<"Detector |"<<std::setw(SWL_DESCRIPTOR)<<std::right<<"Descriptor |"
-                    <<std::setw(SWL_TL_KEYPOINTS) <<std::right<< " Total Keypoints |"<<std::setw(SWL_TL_MATCHES)<<std::right<< "Total Matches |" 
-                        <<std::setw(SWL_TL_TIME)<<std::right<< "Total Time (ms) |" <<std::setw(SWL_TL_RATIO)<<std::right<< "Ratio (matches/time) |" << std::endl;
+    resultFile<<setw(SWL_SERIAL_NO)<<std::right<<"Sl No |"<<std::setw(SWL_DETECTOR)<<std::right<<"Detector |"
+            <<std::setw(SWL_DESCRIPTOR)<<std::right<<"Descriptor |"
+                <<std::setw(SWL_TL_KEYPOINTS) <<std::right<< " Total Keypoints |"<<std::setw(SWL_TIME_P_KEYP)<<"Time Per Keypoint |"
+                    <<std::setw(SWL_TL_MATCHES)<<std::right<< "Total Matches |"<<std::setw(SWL_TIME_P_MATCH)<<std::right <<"Time Per Match |"
+                        <<std::setw(SWL_TL_PPLIN_TME)<<std::right<< "Total pipeline time for 10 frames (ms) |" << std::endl;
     //Append the partition
-    resultFile<<setw(SWL_SERIAL_NO)<<std::right<<"---- |"<<std::setw(SWL_DETECTOR)<<"---- |"<<std::setw(SWL_DESCRIPTOR)<<"---- |"<<std::setw(SWL_TL_KEYPOINTS)<<"---- |"
-                    <<std::setw(SWL_TL_MATCHES)<<"---- |"<<std::setw(SWL_TL_TIME)<<"---- |"<<std::setw(SWL_TL_RATIO)<<"---- |"<<std::endl;
+    resultFile<<setw(SWL_SERIAL_NO)<<std::right<<"---- |"<<std::setw(SWL_DETECTOR)<<"---- |"
+            <<std::setw(SWL_DESCRIPTOR)<<"---- |"
+                <<std::setw(SWL_TL_KEYPOINTS)<<"---- |"<<std::setw(SWL_TIME_P_KEYP)<<"---- |"
+                    <<std::setw(SWL_TL_MATCHES)<<"---- |"<<std::setw(SWL_TIME_P_MATCH)<<std::right <<"---- |"
+                        <<std::setw(SWL_TL_PPLIN_TME)<<"---- |"<<std::endl;
 #endif //end _GENERATE_RESULTS_FILE_
 
 
@@ -200,6 +201,14 @@ int main(int argc, const char *argv[]){
             //Unique strings for discriptor and detectors 
             string uniqueDetector   = get_right_of_delim(GetString((Detectors)iDetectorIndex), "detector_");
             string uniqueDescriptor = get_right_of_delim(GetString((Descriptors)iDescriptorIndex), "descriptor_");
+            
+            //Time for different aspents of programe for measuring performance
+            double matcherTime = 0;
+            double detectorTime = 0;
+            double descriptorTime = 0; 
+            double totalPipelineTime  = 0;  // Total time taken by the pipeline
+            int keypointTotal   = 0;        // Total keypoints
+            int matchesTotal    = 0;        // Total matches
 
 
 #ifdef _GENERATE_RESULTS_FILE_
@@ -219,7 +228,8 @@ int main(int argc, const char *argv[]){
             //std::ios::app|
             perPairFile.open(perPairFilePath.c_str(),ios::out);
             //Append the header
-            perPairFile<<"Image 1 Index,"<<"Image 2 Index,"<<"Matched Keypoints,"<<"Ratio (matches/time)," << std::endl; 
+            perPairFile<<"Image 1 Index,"<<"Image 2 Index,"<<"Matched Keypoints,"
+                    <<"Matched time taken"<<"Ratio (matches/time)," << std::endl; 
 
             string csvKeypointsFileName = uniqueDetector+csvExtns;
             string keypointFilePath(keypointsPath + csvKeypointsFileName);
@@ -230,10 +240,12 @@ int main(int argc, const char *argv[]){
             //std::ios::app|
             keyPointFile.open(keypointFilePath.c_str(),ios::out);
             //Append the header
-            keyPointFile<<"Image index,"<<"BBox Keypoints,"<<"Distribution of Neighbourhood,"<<"Time taken per Keypoint"<< std::endl;
+            keyPointFile<<"Image index,"<<"Keypoints in BBox,"<<"Distribution of Neighbourhood,"<<"Time per Keypoint"<< std::endl;
 
 #endif //end _GENERATE_RESULTS_FILE_
 
+
+//#ifdef CodeNotCompile
 
             //8. Count the number of matched keypoints for all 10 images using all possible combinations 
             //of detectors and descriptors. In the matching step, the BF approach is used with the descriptor distance ratio set to 0.8.time taken per keypoint
@@ -243,10 +255,12 @@ int main(int argc, const char *argv[]){
             /* MAIN LOOP OVER ALL IMAGES */
             for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
             {
+                //For logging
                 if( bConsoleLogging ){
                     cout <<"        1        : LOAD IMAGE INTO BUFFER" << endl;
                     cout<< "Image Loop Index : "<< imgIndex << endl;
                 }
+
                 /* LOAD IMAGE INTO BUFFER */
                 // assemble filenames for current index
                 ostringstream imgNumber;
@@ -256,46 +270,49 @@ int main(int argc, const char *argv[]){
                 cv::Mat img, imgGray;
                 img = cv::imread(imgFullFilename);
                 cv::cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
+
+
                 //// STUDENT ASSIGNMENT
                 //// TASK MP.1 -> replace the following code with ring buffer of size dataBufferSize
                 DataFrame frame;
                 frame.cameraImg = imgGray;        
                 //push image into data frame buffer
                 dataBuffer.push_back(frame);
-                //Ring buffer implementation on vector, erase the first element in the vector, which is the oldest 
+
+                //Impletemted a Ring buffer on vector, erase the first element in the vector, which is the oldest 
                 if (dataBuffer.size() > dataBufferSize)
                 {
                     dataBuffer.erase(dataBuffer.begin());
-                }
+                }                
+                //// EOF STUDENT ASSIGNMENT
+
+                //For logging
                 if( bConsoleLogging ){
                     cout<< "Databuffer Size  : "<< dataBuffer.size() << endl;
-                //// EOF STUDENT ASSIGNMENT
-                    cout << "--------1--------: done" << endl;
-                /* DETECT IMAGE KEYPOINTS */
                     cout << "        2        : DETECT IMAGE KEYPOINTS" << endl;
                 }
+                
 
+                /* DETECT IMAGE KEYPOINTS */
                 //// STUDENT ASSIGNMENT
                 //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
                 //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
                 if( bConsoleLogging ){
-                    std::cout<< "Detector Type    : " << detectorType << endl;
+                    std::cout<< "Detector Type    : " << uniqueDetector << endl;
                 }
 
                                 // extract 2D keypoints from current image
                 vector<cv::KeyPoint> keypoints; // create empty feature list for current image
 
                 //To accumulate the detection time taken
-                double detectorTime = 0;
+                
                 detectorType = uniqueDetector;
 
                 //Detect keypoint function for allthe keypoint detector 
                 //Note: Replaced the switch with a function to clean up the code
-                detectorTime = detectKeypoints(keypoints, imgGray, iDetectorIndex, bVis, bConsoleLogging);
+                detectorTime += detectKeypoints(keypoints, imgGray, iDetectorIndex, bVis, bConsoleLogging);
+              
 
-               
-                //Calculating the total keypoints
-                keypointTotal += keypoints.size();
                 if( bConsoleLogging ){
                     cout << "--------2--------: Done" << endl;                
                 //// EOF STUDENT ASSIGNMENT
@@ -304,7 +321,7 @@ int main(int argc, const char *argv[]){
                     cout << "        3        : RETAIN BBOX KEYPOINTS" << endl;
                 }
                 // only keep keypoints on the preceding vehicle
-                bool bFocusOnVehicle = false;                
+                bool bFocusOnVehicle = true;                
                 //Vehicle Bounding box
                 cv::Rect vehicleRect(535, 180, 180, 150);
                 if (bFocusOnVehicle)
@@ -327,8 +344,11 @@ int main(int argc, const char *argv[]){
                         cv::namedWindow(windowName, 6);
                         imshow(windowName, visImage);
                         cv::waitKey(0);
-                    }
+                    }                    
                 }
+                //Calculating the total keypoints
+                keypointTotal += keypoints.size();
+
                 //// EOF STUDENT ASSIGNMENT
                 // optional : limit number of keypoints (helpful for debugging and learning)
                 bool bLimitKpts = false;
@@ -361,11 +381,10 @@ int main(int argc, const char *argv[]){
                 descriptorType = uniqueDescriptor;
 
                 if( bConsoleLogging ){   
-                    std::cout<< "Discriptor Type  : " << descriptorType << endl;       
+                    std::cout<< "Discriptor Type  : " << uniqueDescriptor << endl;       
                 }
                 //Descriptor time for accumulating the time taken by the descriptor extraction
-                double descriptorTime = 0;
-                descriptorTime = descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType, bConsoleLogging);                              
+                descriptorTime += descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType, bConsoleLogging);                              
                 
                 //// EOF STUDENT ASSIGNMENT
                 
@@ -389,14 +408,15 @@ int main(int argc, const char *argv[]){
                     //// STUDENT ASSIGNMENT//////////////////////////////////////////////////////////////////////////////////////////////////////////////////TODO, Uncomment Matcher
                     //// TASK MP.5 -> add FLANN matching in file matching2D.cpp
                     //// TASK MP.6 -> add KNN match selection and perform descriptor distance ratio filtering with t=0.8 in file matching2D.cpp
-                    // matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
+                    
+                    // matcherTime += matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                     //                 (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
                     //                 matches, descriptorType, matcherType, selectorType);
                     //Total maches
                     matchesTotal += matches.size();
 
                     //7.Count the number of keypoints on the preceding vehicle for all 10 images and take 
-                    //note of the distribution of their neighborhood size. Do this for all the detectors you have implemented.     
+                    //note of the distribution of their neighborhood size. Do this for all the detectors you have implemented    
                     
 
                     //What is the neighborhood size? In the case of Shi-Tomasi and Harris detectors, I believe it refers to parameter blockSize; 
@@ -424,20 +444,14 @@ int main(int argc, const char *argv[]){
                     
                     // double total = std::accumulate(keypoints.size.begin(), keypoints.size.end(), 0.0, add_square);
                     // double variance = total / keypoints.size();
+                    
+                    
                     // Also, for each of the combination play with parameters to improve the results
 
                     //8. Count the number of matched keypoints for all 10 images using all possible combinations 
                     //of detectors and descriptors. In the matching step, the BF approach is used with the descriptor distance ratio set to 0.8.time taken per keypoint
 
-#ifdef _GENERATE_RESULTS_FILE_
-                    //Comma seperated file
-                    perPairFile<<iCombinationIndex+1<<","<<uniqueDetector<<","<<uniqueDescriptor<<","<<
-                                    std::setw(23)<<std::right <<keypointTotal<<","<<std::setw(23)<<std::right<<matchesTotal<<","
-                                        <<std::setw(23)<<std::right<<totalTime * 1000.0<<","<< std::setw(23)<<std::right<< 
-                                            ((totalTime!=0)? (matchesTotal / (totalTime * 1000.0)):0) <<","<<std::endl;
 
-                    keyPointFile<<imgIndex<<","<<keypoints.size()<<","<<"Distribution of Neighbourhood,"<<((keypoints.size()!=0)? ((detectorTime * 1000.0)/keypoints.size()):0)<< std::endl;
-#endif //end _GENERATE_RESULTS_FILE_
                     
 
 
@@ -465,12 +479,23 @@ int main(int argc, const char *argv[]){
                     }
                     bVis = false;
                 }
-                totalTime += detectorTime + descriptorTime;
 
 
                 if( bConsoleLogging ){
-                    cout << "Total time       : Detector + Descriptor + Matcher is " << totalTime * 1000.0 << " ms \n";
+                    cout << "Total time       : Detector + Descriptor + Matcher is " << totalPipelineTime * 1000.0 << " ms \n";
                 }
+
+#ifdef _GENERATE_RESULTS_FILE_
+                    //Comma seperated file for pair of detectors for performance of speed and total maches - total over 10 images
+                perPairFile<<iCombinationIndex+1<<","<<uniqueDetector<<","<<uniqueDescriptor<<","<<
+                                std::setw(23)<<std::right <<keypointTotal<<","<<std::setw(23)<<std::right<<matchesTotal<<","
+                                    <<std::setw(23)<<std::right<<totalPipelineTime * 1000.0<<","<< std::setw(23)<<std::right<< 
+                                        ((totalPipelineTime!=0)? (matchesTotal / (totalPipelineTime * 1000.0)):0) <<","<<std::endl;
+
+                //Comma seperated file per detector
+                keyPointFile<<imgIndex<<","<<keypoints.size()<<","<<"Distribution of Neighbourhood,"
+                            <<((keypoints.size()!=0)? ((detectorTime * 1000.0)/keypoints.size()):0)<< std::endl;
+#endif //end _GENERATE_RESULTS_FILE_
     
             //9. Log the time it takes for keypoint detection and descriptor extraction. The results must be entered into a spreadsheet and 
             //based on this data, the TOP3 detector / descriptor combinations must be recommended as the best choice for our purpose of detecting keypoints on vehicles.
@@ -478,8 +503,9 @@ int main(int argc, const char *argv[]){
             //Estimating homographies on planner surfaces ( to compute the ground truth extraction)
 
             } // eof loop over all images
-            
-            
+            //Total Pipeline time
+            totalPipelineTime = detectorTime + descriptorTime + matcherTime;
+//#endif //CodeNotCompile
 
 
 #ifdef _GENERATE_RESULTS_FILE_
@@ -489,11 +515,13 @@ int main(int argc, const char *argv[]){
 
             //File for the total update of the run
             //Append the new pair of data
-            resultFile<<setw(SWL_SERIAL_NO-2)<<std::right<<iCombinationIndex+1<<" |"<<std::setw(SWL_DETECTOR-2)<<std::right
-                        <<uniqueDetector<< " |"<<std::setw(SWL_DESCRIPTOR-2)<<std::right<<uniqueDescriptor<<" |" <<
-                            std::setw(SWL_TL_KEYPOINTS-2)<<std::right <<keypointTotal<<" |"<<std::setw(SWL_TL_MATCHES-2)
-                                <<std::right<<matchesTotal<<" |" <<std::setw(SWL_TL_TIME-2)<<std::right<<totalTime * 1000.0<<" |"
-                                    << std::setw(SWL_TL_RATIO-2)<<std::right<< ((totalTime!=0)? (matchesTotal / (totalTime * 1000.0)):0) <<" |"<<std::endl;
+            resultFile<<setw(SWL_SERIAL_NO-2)<<std::right<<iCombinationIndex+1<<" |"
+                    <<std::setw(SWL_DETECTOR-2)<<std::right<<uniqueDetector<< " |"
+                        <<std::setw(SWL_DESCRIPTOR-2)<<std::right<<uniqueDescriptor<<" |" 
+                            <<std::setw(SWL_TL_KEYPOINTS-2)<<std::right <<keypointTotal<<" |"<<std::setw(SWL_TIME_P_KEYP-2)<<std::right <<detectorTime/keypointTotal<<" |"
+                                <<std::setw(SWL_TL_MATCHES-2)<<std::right<<matchesTotal<<" |"<<std::setw(SWL_TIME_P_MATCH-2)<<std::right <<matcherTime/matchesTotal<<" |" 
+                                    <<std::setw(SWL_TL_PPLIN_TME-2)<<std::right<<totalPipelineTime * 1000.0<<" |"<<std::endl;
+                                        //<< std::setw(SWL_TL_RATIO-2)<<std::right<< ((totalTime!=0)? (matchesTotal / (totalTime * 1000.0)):0) <<" |"<<std::endl;
 
 #endif //end _GENERATE_RESULTS_FILE_
             //For index of the combination run
