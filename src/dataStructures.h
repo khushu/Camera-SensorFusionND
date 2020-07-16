@@ -46,6 +46,8 @@ struct DataFrame {                      // represents the available sensor infor
 // };
 
 
+
+
 //Learned new conceppts:
 //1. Macros to define enums clases and string equivalent in c & c++, using # and ## operators
 //https://stackoverflow.com/questions/147267/easy-way-to-use-variables-of-enum-types-as-string-in-c
@@ -149,6 +151,26 @@ DEFINE_ENUM(Selectors,SELECTOR_ENUM);
 inline std::string get_right_of_delim(std::string const& str, std::string const& delim)
 {
   return str.substr(str.find(delim) + delim.size());
+}
+
+// SIFT Descriptors have compatible macher type, where we have taken care to do a L2_Norm
+//https://answers.opencv.org/question/10046/feature-2d-feature-matching-fails-with-assert-statcpp/
+
+inline std::string CompatibleMatcherTypes(const Descriptors descriptor)
+{
+  switch (descriptor)
+  {
+    case descriptor_BRISK:
+    case descriptor_BRIEF:
+    case descriptor_ORB:
+    case descriptor_FREAK:
+    case descriptor_AKAZE:
+      return "MAT_BF";
+    case descriptor_SIFT:
+      return "MAT_FLANN";
+    default:
+      std::cout<<"Error, Matcher for "<<descriptor<<" not implemented, please check"<<std::endl;
+  }
 }
 
 //Word length for logfiles
