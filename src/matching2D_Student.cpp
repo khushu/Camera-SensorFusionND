@@ -348,7 +348,6 @@ double detKeypointsORB(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis,
     // cv::Ptr<cv::ORB> detector = cv::ORB::create(nfeatures, scaleFactor, nlevels, 
                                             // edgeThreshold, firstLevel, WTA_K, 
                                             // scoreType, patchSize, fastThreshold);
-
     
     //For less control
     cv::Ptr<cv::ORB> detector = cv::ORB::create();

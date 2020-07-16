@@ -175,12 +175,12 @@ inline std::string CompatibleMatcherTypes(const Descriptors descriptor)
 
 //Word length for logfiles
 #define SWL_SERIAL_NO     7
-#define SWL_DETECTOR      13
-#define SWL_DESCRIPTOR    14
-#define SWL_TL_KEYPOINTS  18
-#define SWL_TIME_P_KEYP   21
-#define SWL_TL_MATCHES    16
-#define SWL_TIME_P_MATCH  21
-#define SWL_TL_PPLIN_TME  40
+#define SWL_DETECTOR      12
+#define SWL_DESCRIPTOR    13
+#define SWL_TL_KEYPOINTS  12
+#define SWL_TIME_P_KEYP   15
+#define SWL_TL_MATCHES    12
+#define SWL_TIME_P_MATCH  15
+#define SWL_TL_PPLIN_TME  21
 
 #endif /* dataStructures_h */
