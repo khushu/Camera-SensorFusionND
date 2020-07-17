@@ -1,6 +1,6 @@
 # 2D Feature detection, extraction and matching
 
-Mid-term project for Camera module towards Udacity's Sensor Fusion nanao degree. 
+Mid-term project for Camera module towards Udacity's Sensor Fusion nano degree. 
 
 <img src="images/keypoints.png" width="820" height="248" />
 
