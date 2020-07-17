@@ -587,7 +587,7 @@ int compareKeypointMatching()
     if(bGenerateFiles)
     {
         //Close the file
-        std::cout<<"\nGenerating file  : FinalResults.txt... FinalResults.csv"<<std::endl;
+        std::cout<<"\nGenerating file  : FinalResults.txt... FinalResults.csv \nDone."<<std::endl;
         resultFile.close();
     }
 #endif //end _GENERATE_RESULTS_FILE_

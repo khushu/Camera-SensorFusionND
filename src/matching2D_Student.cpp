@@ -39,7 +39,8 @@ double matchDescriptors(std::vector<cv::KeyPoint> &kPtsSource, std::vector<cv::K
         matcher->match(descSource, descRef, matches); // Finds the best match for each descriptor in desc1
     }
     else if (selectorType.compare("SEL_KNN") == 0)
-    { // k nearest neighbors (k=2)
+    { 
+        // k nearest neighbors (k=2)
         //cout<<"SEL_KNN"<<endl;
 
         std::vector< std::vector<cv::DMatch> > knn_matches;
