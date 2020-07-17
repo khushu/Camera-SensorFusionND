@@ -23,53 +23,67 @@ One flow runs all the detector / descriptor pair, and other runs one tyhe best w
 Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf.
 
 Created a README.md
+
 **Done.**
 
 **MP.1 Data Buffer Optimization**
 Implement a vector for dataBuffer objects whose size does not exceed a limit (e.g. 2 elements). This can be achieved by pushing in new elements on one end and removing elements on the other end. 
 
 Using erase in a vector method to delete the first data element in the vactor to implement circular buffer of images. Works as per specification, No known issues.
-        //Impletemted a Ring buffer on vector, erase the first element in the vector, which is the oldest 
-        if (dataBuffer.size() > dataBufferSize)
-        {
-            dataBuffer.erase(dataBuffer.begin());
-        }  
+ 
+```
+//Impletemted a Ring buffer on vector, erase the first element in the vector, which is the oldest 
+if (dataBuffer.size() > dataBufferSize)
+{
+    dataBuffer.erase(dataBuffer.begin());
+}
+```
+
+  
 **Done.**
 
 **MP.2 Keypoint Detection**
 Implement detectors HARRIS, FAST, BRISK, ORB, AKAZE, and SIFT and make them selectable by setting a string accordingly.
 
 All the detectors mentioned are working.
+
 **Done.**
 
 **MP.3 Keypoint Removal**
 Remove all keypoints outside of a pre-defined rectangle and only use the keypoints within the rectangle for further processing. 
 
 All the keypoints outside the box are removed using contains method. 
-                        //check if the keypoint is not within the defined box
-                        if(!vehicleRect.contains((*i).pt)) 
-                        {
-                            //Erase the keypoint and decrement the ittrator
-                            keypoints.erase(i--);
-                        }
+
+```
+//check if the keypoint is not within the defined box    
+if(!vehicleRect.contains((*i).pt)) 
+{
+    //Erase the keypoint and decrement the ittrator
+    keypoints.erase(i--);
+}
+```
+
 **Done.**
 
 **MP.4 Keypoint Descriptors**
 Implement descriptors BRIEF, ORB, FREAK, AKAZE and SIFT and make them selectable by setting a string accordingly.
 
 All the descriptors mentioned are working.
+
 **Done**
 
 **MP.5 Descriptor Matching**
 Implement FLANN matching as well as k-nearest neighbor selection. Both methods must be selectable using the respective strings in the main function. 
 
 Both FLANN matching and k-nearest neighbor are working, which can be selected by a string. 
+
 **Done.**
 
 **MP.6 Descriptor Distance Ratio**
 Use the K-Nearest-Neighbor matching to implement the descriptor distance ratio test, which looks at the ratio of best vs. second-best match to decide whether to keep an associated pair of keypoints.
 
 The descriptor distance ratio test to filter keypoints based on the distance ratio threshold set to 0.8.
+
 **Done.**
 
 **MP.7 Performance Evaluation 1**
@@ -78,6 +92,7 @@ Count the number of keypoints on the preceding vehicle for all 10 images and tak
 A directory created inside results/keypoints, for all the keypoints, in which each keypoint extraction is a seperate file with number of keypoints detected, time taken per keypoint and distribution of neighborhood sizes for each keypoint extraction. Distribution has mean, median, and standard diviation information. 
 
 The neighborhood size standard diviations are minimum as the following in assending order (listed only smallest numbers in each keypoint): 
+```
 SHITOMASI 	- 0
 HARIS 		- 0
 FAST		- 0
@@ -85,6 +100,7 @@ AKAZE		- 3.37
 SIFT 		- 5.14
 BRISK 		- 12.61
 ORB 		- 23.67
+```
 
 **Done.**
 
@@ -95,6 +111,7 @@ Count the number of matched keypoints for all 10 images using all possible combi
 A directory created inside results/matches, for all the matches, in which each of the detector / descriptor pair is a seperate file with number of matches detected per frame with respect to detected keypoints, time taken per match. 
 
 Also, implemented descriptor distance ratio test with ratio threshold set to 0.8.
+
 **Done.**
 
 
@@ -110,7 +127,7 @@ In results directory, 2 files gets created "FinalResults" which has same content
 The executable if run in generating files mode (./2D_feature_tracking 1), generates a results directory, in parellel to build directory. Inside results directory, creates 2 more directories containing keypoints and matches files. Also, in results directory it creates FinalResults.csv/FinalResults.txt which has same content. Summary is shown below: 
 
 Result table for all the detector / descriptor pair methods, then sorting based on the speed and then number of matches to finally conclude.
-
+```
 Sl No |  Detector | Descriptor | T Keypnts | Tme P Keypnt | T Matches |   Tme P Mtch | Ttl tme 10 frms (s) |
  ---- |      ---- |       ---- |      ---- |         ---- |      ---- |         ---- |                ---- |
     1 | SHITOMASI |      BRISK |     13423 |  1.07751e-05 |       767 |  7.32659e-06 |            0.170768 |
@@ -149,8 +166,9 @@ Sl No |  Detector | Descriptor | T Keypnts | Tme P Keypnt | T Matches |   Tme P 
    34 |      SIFT |      FREAK |     13862 |  8.23701e-05 |       593 |  4.19811e-06 |             1.46483 |
    35 |      SIFT |       SIFT |     13862 |  6.64414e-05 |       803 |   3.0621e-05 |             1.72726 |
  ---- |      ---- |       ---- |      ---- |         ---- |      ---- |         ---- |                ---- |
-
+```
 **Top 5 based on the time (speed):**
+```
 Sl No | Rank | Detector | Descriptor | T Keypnts | Tme P Keypnt | Matches |  Tme P Mtch | tme 10 frms (s) |
  ---- | ---- |     ---- |       ---- |      ---- |         ---- |    ---- |        ---- |            ---- |
    12 |    1 |     FAST |      BRIEF |     49204 |  4.17384e-07 |    2831 | 5.62399e-06 |       0.0511946 |
@@ -159,8 +177,9 @@ Sl No | Rank | Detector | Descriptor | T Keypnts | Tme P Keypnt | Matches |  Tme
    22 |    4 |      ORB |      BRIEF |      5000 |   1.3195e-05 |     545 | 3.34565e-06 |       0.0738613 |
    21 |    5 |      ORB |      BRISK |      5000 |  1.56921e-05 |     751 | 2.31141e-06 |       0.0936804 |
  ---- | ---- |     ---- |       ---- |      ---- |         ---- |    ---- |        ---- |            ---- |
-
+```
 **Top 5 based on the matches**
+```
 Sl No | Rank | Detector | Descriptor | T Keypnts | Tme P Keypnt | Matches |  Tme P Mtch | tme 10 frms (s) |
  ---- | ---- |     ---- |       ---- |      ---- |         ---- |    ---- |        ---- |            ---- |
    12 |    1 |     FAST |      BRIEF |     49204 |  4.17384e-07 |    2831 | 5.62399e-06 |       0.0511946 |
@@ -169,13 +188,13 @@ Sl No | Rank | Detector | Descriptor | T Keypnts | Tme P Keypnt | Matches |  Tme
    14 |    4 |     FAST |      FREAK |     49204 |  4.20041e-07 |    2233 | 7.68106e-06 |        0.397394 |
    11 |    5 |     FAST |      BRISK |     49204 |  3.98207e-07 |    2183 | 7.04869e-06 |       0.0737474 |
  ---- | ---- |     ---- |       ---- |      ---- |         ---- |    ---- |        ---- |            ---- |
-
+```
 **Final recommendation:**
 In both Speed and number of matches, row with Sl No 12, comes 1st and outperforms other detector / descriptor methods.
-
+```
 Detector	: FAST
 Descriptor	: BRIEF
-
+```
 
 **Machine configuration for benchmark timing:**
  1. HP Spectre 360
@@ -204,7 +223,6 @@ Descriptor	: BRIEF
   * Windows: recommend using [MinGW](http://www.mingw.org/)
 
 ## Basic Build Instructions
-
 
 **Through bash files**
 on Linux/mac (TODO: not yet tested on windows)
