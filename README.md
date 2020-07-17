@@ -225,14 +225,15 @@ Descriptor	: BRIEF
 ## Basic Build Instructions
 
 **Through bash files**
+```
 on Linux/mac (TODO: not yet tested on windows)
-1. Clone this repo.
 Files:
 CLEAN: this files deletes old "results" and "build" directories
 BUILD: this creates a build directory and compiles the code and makes binaries/executable
 RUN: runs the executable generating the files
 RUN_VIS: runs the executable in visual mode with one of the methods
-
+```
+1. Clone this repo.
 2. run: chmod +x CLEAN BUILD RUN RUN_VIS
 3. run: ./CLEAN
 4. run: ./BUILD
@@ -244,8 +245,8 @@ OR
 3. Compile: `cmake .. && make`
 4. Run it: `./2D_feature_tracking 0` or `./2D_feature_tracking 1`
 
- `./2D_feature_tracking 0`  - Runs with only visual and for only 10 frames 
- `./2D_feature_tracking 1`  - Runs with generating the files for all the detector / descriptor combinations
- `./2D_feature_tracking` - will take the default parameter of 1 and generate the files
+ * `./2D_feature_tracking 0` - Runs with only visual and for only 10 frames 
+ * `./2D_feature_tracking 1` - Runs with generating the files for all the detector / descriptor combinations
+ * `./2D_feature_tracking`   - will take the default parameter of 1 and generate the files
 
 
