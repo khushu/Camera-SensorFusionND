@@ -34,18 +34,10 @@ namespace fs = std::experimental::filesystem;
 using namespace std;
 
 
-    //TODO:
-    //Clean up the code:
-    //1. Write readme and observations        
-    //2. Make batch script to have call option to generate files or not 
-    //3. For 10 frames flow, by default enable the bounding box and visuals, Rectify bVis why this does not work 
+    //TODO: Later
     //4. Integrate a logging header (spdlog, as external)
-    //5. C++ Design as much.. (see how that can be thread safe???)
-    //6. How this can run in distributed settings ( and state machine settings??)
-    //7. Mostly return only error codes, not values of the functions, return value must be through pass by refrence
-    //8. Use default parameters for running generating the text files
-
-    
+    //5. OOP Design as much.. (see how that can be thread safe???)
+    //6. How this can run in distributed settings (and state machine settings??)
 
 
 ///*************************************************************************************
@@ -72,36 +64,44 @@ int compareKeypointMatching();
 /* MAIN PROGRAM */
 int main(int argc, const char *argv[])
 {
+    std::string options;
     
     //Parsing command line arguments
-    if (argc<2||argc>2)
+    if (argc>2)
     {
 		std::cout <<"Usage: " << argv[0] << " 0 or 1, to generate method comparison files. Please check your inputs.."<<std::endl;
         return 1;
     }    
-    else
-    {   
-        //If the arguments are correct 
-        std::string options(argv[1]);     
-        if (options == "0")
-        {
-            //Only run for 10 images as the pipeline integration of the selected keypoints method 
-            //(console logging enabled. Only for taski 1 to 6)
-            runKeypointMatching();
-        }
-        else if (options == "1")
-        {
-            //Run for all possible methods generating files for the analysis
-            //(console logging Disabled. Only for tasks 7 to 9)
-            compareKeypointMatching();
-        }
-        else
-        {
-            std::cout <<"Usage: " << argv[0] << " 0 or 1, to generate method comparison files. Please check your inputs.."<<std::endl;
-            return 1;
-        }
-
+    else if (argc<2)
+    {
+        //For no arguments passed by the user
+        std::cout <<"Usage: " << argv[0] << " 0 or 1, to generate method comparison files. Taking default parameters.."<<std::endl;
+        options = "1"; //Default parameter
     }
+    else
+    {
+        //For option passed by the user
+         options = argv[1];
+    }       
+  
+    if (options == "0")
+    {
+        //Only run for 10 images as the pipeline integration of the selected keypoints method 
+        //(console logging enabled. Only for tasks 1 to 6, with visuals)
+        runKeypointMatching();
+    }
+    else if (options == "1")
+    {
+        //Run for all possible methods generating files for the analysis
+        //(console logging Disabled. Whole pipeline, no visuals, also for tasks 1 to 9)
+        compareKeypointMatching();
+    }
+    else
+    {
+        std::cout <<"Usage: " << argv[0] << " 0 or 1, to generate method comparison files. Please check your inputs.."<<std::endl;
+        return 1;
+    }
+
     cv::waitKey(0);
     return 0;
 }
@@ -631,7 +631,7 @@ int runKeypointMatching()
     int imgFillWidth    = 4;        // no. of digits which make up the file index (e.g. img-0001.png)
 
     bool bVis               = false; // visualize results
-    bool bVehicleBBox       = false; // visualize only vehicle keypoints
+    bool bVehicleBBox       = true; // visualize only vehicle keypoints
     bool bConsoleLogging    = true; // Console minimum logging   
 
     int iCombinationIndex   = 0;     // Combination index for Sl number for the outer loop
@@ -672,14 +672,18 @@ int runKeypointMatching()
     int keypointTotal           = 0;  // Total keypoints
     int matchesTotal            = 0;  // Total matches
 
+    if( bConsoleLogging ){
+        std::cout<< "Detector Type   : " << uniqueDetector << endl;
+        std::cout<< "Descriptor Type : " << uniqueDescriptor << endl;
+    }
+
 
     /* MAIN LOOP OVER ALL IMAGES */
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
     {
         //For logging
-        if( bConsoleLogging ){
-            cout <<"        1        : LOAD IMAGE INTO BUFFER" << endl;
-            cout<< "Image Loop Index : "<< imgIndex << endl;
+        if( bConsoleLogging ){            
+            cout<< "Image Index     : "<<std::setw(2)<< imgIndex + 1 <<"  Press key.."<< endl;             
         }
 
         /* LOAD IMAGE INTO BUFFER */
@@ -706,22 +710,13 @@ int runKeypointMatching()
             dataBuffer.erase(dataBuffer.begin());
         }                
         //// EOF STUDENT ASSIGNMENT
-
-        //For logging
-        if( bConsoleLogging ){
-            cout<< "Databuffer Size  : "<< dataBuffer.size() << endl;
-            cout << "        2        : DETECT IMAGE KEYPOINTS" << endl;
-        }
-        
+   
 
         /* DETECT IMAGE KEYPOINTS */
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based 
         ////  selection based on detectorType
         //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
-        if( bConsoleLogging ){
-            std::cout<< "Detector Type    : " << uniqueDetector << endl;
-        }
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
@@ -742,13 +737,10 @@ int runKeypointMatching()
         totalDetectorTime += detectorTime;
         
 
-        if( bConsoleLogging ){
-            cout << "--------2--------: Done" << endl;                
         //// EOF STUDENT ASSIGNMENT
         //// STUDENT ASSIGNMENT
         //// TASK MP.3 -> only keep keypoints on the preceding vehicle
-            cout << "        3        : RETAIN BBOX KEYPOINTS" << endl;
-        }
+
         // only keep keypoints on the preceding vehicle
         bool bFocusOnVehicle = true;                
         //Vehicle Bounding box
@@ -790,16 +782,13 @@ int runKeypointMatching()
             keypoints.erase(keypoints.begin() + maxKeypoints, keypoints.end());
             cv::KeyPointsFilter::retainBest(keypoints, maxKeypoints);
             if( bConsoleLogging ){
-                cout << "Note             : Keypoints have been limited!" << endl;
+                cout << "Note            : Keypoints have been limited!" << endl;
             }
         }
         // Keypoints of the current frame are assigned to the last item in the buffer 
         // push keypoints and descriptor for current frame to end of data buffer
         (dataBuffer.end() - 1)->keypoints = keypoints;                
-        if( bConsoleLogging ){
-            cout << "--------3--------: Done" << endl;
-            cout << "        4        : EXTRACT DESCRIPTORS" << endl;
-        }
+
         /* EXTRACT KEYPOINT DESCRIPTORS */
         //// STUDENT ASSIGNMENT
         //// TASK MP.4 -> add the following descriptors in file matching2D.cpp and enable string-based selection based on descriptorType
@@ -809,9 +798,6 @@ int runKeypointMatching()
         //Switch has been replaced by precomputed unique Descriptor and equated 
         descriptorType = uniqueDescriptor;
 
-        if( bConsoleLogging ){   
-            std::cout<< "Discriptor Type  : " << uniqueDescriptor << endl;       
-        }
         //Descriptor time for accumulating the time taken by the descriptor extraction
         descriptorTime = descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType, bConsoleLogging);                              
         
@@ -822,10 +808,7 @@ int runKeypointMatching()
         
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
-        if( bConsoleLogging ){
-            cout << "--------4--------: done" << endl;
-            cout << "       5/6       : MATCH KEYPOINT DESCRIPTORS" << endl;
-        }                
+            
         if (dataBuffer.size() > 1) // wait until at least two images have been processed
         {
             /* MATCH KEYPOINT DESCRIPTORS */
@@ -839,10 +822,6 @@ int runKeypointMatching()
 
             string descriptorType   = "DES_BINARY";     // DES_BINARY, DES_HOG  
             string selectorType     = "SEL_KNN";         // SEL_NN, SEL_KNN
-            if( bConsoleLogging ){
-                std::cout<< "Macher Type      : " << matcherType << endl;
-                std::cout<< "Selector Type    : " << selectorType << endl;
-            }
 
             
             //// STUDENT ASSIGNMENT//////////////////////////////////////////////////////////////////////////////////////////////////////////////////TODO, Uncomment Matcher
@@ -861,11 +840,9 @@ int runKeypointMatching()
             //// EOF STUDENT ASSIGNMENT
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
-            if( bConsoleLogging ){
-                cout << "-------5/6-------: done" << endl;
-            }
+
             // visualize matches between current and previous image
-            bVis = false;
+            bVis = true;
             if (bVis)
             {
                 cv::Mat matchImg = ((dataBuffer.end() - 1)->cameraImg).clone();
@@ -874,10 +851,9 @@ int runKeypointMatching()
                                 matches, matchImg,
                                 cv::Scalar::all(-1), cv::Scalar::all(-1),
                                 vector<char>(), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
-                string windowName = "Matching keypoints between two camera images";
+                string windowName = "Matching keypoints between two frames";
                 cv::namedWindow(windowName, 7);
                 cv::imshow(windowName, matchImg);
-                cout << "-----------------: Press key to continue to next image" << endl;
                 cv::waitKey(0); // wait for key to be pressed
             }
             bVis = false;
@@ -889,12 +865,10 @@ int runKeypointMatching()
     totalPipelineTime = totalDetectorTime + totalDescriptorTime + totalMatcherTime;
     if( bConsoleLogging )
     {
-        cout << "Total time       : Detector + Descriptor + Matcher is " << totalPipelineTime << " ms \n";
+        cout << "Total time      : Detector + Descriptor + Matcher for 10 frames: " << totalPipelineTime << " s\n";
     }
     
-    std::cout<<"\nDetector Type    : " << uniqueDetector
-                << "\nDiscriptor Type  : " << uniqueDescriptor 
-                <<"\nDone."<< std::endl;   
+    std::cout<<"Done."<< std::endl;   
     //For index of the combination run
     iCombinationIndex++;
 

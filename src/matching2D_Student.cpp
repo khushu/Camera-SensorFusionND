@@ -160,9 +160,7 @@ double descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &des
     double t = (double)cv::getTickCount();
     extractor->compute(img, keypoints, descriptors);
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : "<<descriptorType << " descriptor extraction in " << 1000 * t / 1.0 << " ms" << endl;
-    }
+
     return t; 
 }
 
@@ -193,9 +191,7 @@ double detKeypointsShiTomasi(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool
         keypoints.push_back(newKeyPoint);
     }
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : Shi-Tomasi detection with n=" << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms @ " << (1000 * t / 1.0)/(double)keypoints.size() << " ms per keypoint" << endl;
-    }
+
     // visualize results
     if (bVis)
     {
@@ -249,9 +245,7 @@ double detKeypointsHarris(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bV
 
     //Difference of time to calculate the time elapsed
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : Harris Cornner detection with n=" << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms @ " << (1000 * t / 1.0)/(double)keypoints.size() << " ms per keypoint" << endl;
-    }
+
     //visualize results
     if (bVis)
     {
@@ -287,9 +281,7 @@ double detKeypointsFAST(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis
 
     //Calculate the time difference 
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : Fast Feature detection with n=" << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms @ " << (1000 * t / 1.0)/(double)keypoints.size() << " ms per keypoint" << endl;
-    }
+
     //visualize results
     if (bVis)
     {
@@ -320,9 +312,7 @@ double detKeypointsBRISK(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVi
 
     //Calculate the time difference 
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : BRISK with n = " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms @ " << (1000 * t / 1.0)/(double)keypoints.size() << " ms per keypoint" << endl;
-    }
+
     // visualize results
     if (bVis)
     {
@@ -360,9 +350,6 @@ double detKeypointsORB(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis,
 
     //Calculate the time difference 
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : ORB with n = " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms @ " << (1000 * t / 1.0)/(double)keypoints.size() << " ms per keypoint" << endl;
-    }
 
     // visualize results
     if (bVis)
@@ -400,9 +387,6 @@ double detKeypointsAKAZE(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVi
 
     //Calculate the time difference 
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : AKAZE with n = " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms @ " << (1000 * t / 1.0)/(double)keypoints.size() << " ms per keypoint" << endl;
-    }
 
     // visualize results
     if (bVis)
@@ -430,9 +414,6 @@ double detKeypointsSIFT(vector<cv::KeyPoint> &keypoints, cv::Mat &img, bool bVis
 
     //Calculate the time difference 
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
-    if( bConsoleLogging ){
-        cout << "Observations     : SIFT detector with n = " << keypoints.size() << " keypoints in " << 1000 * t / 1.0 << " ms @ " << (1000 * t / 1.0)/(double)keypoints.size() << " ms per keypoint" << endl;
-    }
 
     // visualize results
     if (bVis)
