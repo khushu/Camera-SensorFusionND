@@ -181,6 +181,6 @@ inline std::string CompatibleMatcherTypes(const Descriptors descriptor)
 #define SWL_TIME_P_KEYP   15
 #define SWL_TL_MATCHES    12
 #define SWL_TIME_P_MATCH  15
-#define SWL_TL_PPLIN_TME  21
+#define SWL_TL_PPLIN_TME  22
 
 #endif /* dataStructures_h */

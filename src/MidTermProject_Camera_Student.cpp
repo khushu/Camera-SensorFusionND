@@ -36,17 +36,16 @@ using namespace std;
 
     //TODO:
     //Clean up the code:
-    //8. CSV File operation 
-        //Final txt file mostly done...check for what information is useful and dicard the rest
-    //15. Make batch script to have call option to generate files or not 
-    //      (Make a switch between point number 1-6 and then 7-9 (take command line arguments to switch) )
-    //16. (pass in the function with single argument for both flows, and have logging also tie to the same)   
+    //1. Write readme and observations        
+    //2. Make batch script to have call option to generate files or not 
+    //3. For 10 frames flow, by default enable the bounding box and visuals, Rectify bVis why this does not work 
+    //4. Integrate a logging header (spdlog, as external)
+    //5. C++ Design as much.. (see how that can be thread safe???)
+    //6. How this can run in distributed settings ( and state machine settings??)
+    //7. Mostly return only error codes, not values of the functions, return value must be through pass by refrence
+    //8. Use default parameters for running generating the text files
 
-    //7.  Integrate a logging header (spdlog, as external)
-    //9.  C++ Design as much.. (see how that can be thread safe???)
-    //10. How this can run in distributed settings ( and state machine settings??)
-    //11. Mostly return only error codes, not values of the functions, return value must be through pass by refrence
-    //14. Rectify bVis why this does not work
+    
 
 
 ///*************************************************************************************
@@ -97,7 +96,11 @@ int main(int argc, const char *argv[])
             compareKeypointMatching();
         }
         else
+        {
             std::cout <<"Usage: " << argv[0] << " 0 or 1, to generate method comparison files. Please check your inputs.."<<std::endl;
+            return 1;
+        }
+
     }
     cv::waitKey(0);
     return 0;
@@ -120,7 +123,7 @@ int compareKeypointMatching()
 
     bool bGenerateFiles = true;
 
-    cout<<"Compareing...."<<endl;
+    cout<<"Generating Comparison files...."<<endl;
 
     //Filepath for the results directory
     string resutBasePath = dataPath + "results/";
@@ -145,6 +148,7 @@ int compareKeypointMatching()
 
     //Name of the files created
     string resultFileName(resutBasePath + "FinalResults.txt");
+    string resultFileNameCsv(resutBasePath + "FinalResults.csv");
 
 
 #ifdef _GENERATE_RESULTS_FILE_
@@ -183,23 +187,28 @@ int compareKeypointMatching()
 #ifdef _GENERATE_RESULTS_FILE_
     //Final file for total sum per pair to compare:
     ofstream resultFile;
+    ofstream resultFileCsv;
     if(bGenerateFiles)
     {
-        //std::ios::app|
         resultFile.open(resultFileName.c_str(),ios::out);
-        
+        resultFileCsv.open(resultFileNameCsv.c_str(),ios::out);
+                
         //Append the header
         resultFile<<setw(SWL_SERIAL_NO)<<std::right<<"Sl No |"<<std::setw(SWL_DETECTOR)<<std::right<<"Detector |"
                 <<std::setw(SWL_DESCRIPTOR)<<std::right<<"Descriptor |"
                     <<std::setw(SWL_TL_KEYPOINTS) <<std::right<< "T Keypnts |"<<std::setw(SWL_TIME_P_KEYP)<<"Tme P Keypnt |"
                         <<std::setw(SWL_TL_MATCHES)<<std::right<< "T Matches |"<<std::setw(SWL_TIME_P_MATCH)<<std::right <<"Tme P Mtch |"
-                            <<std::setw(SWL_TL_PPLIN_TME)<<std::right<< "Ttl tme 10 frms ms |" << std::endl;
+                            <<std::setw(SWL_TL_PPLIN_TME)<<std::right<< "Ttl tme 10 frms (s) |" << std::endl;
         //Append the partition
         resultFile<<setw(SWL_SERIAL_NO)<<std::right<<"---- |"<<std::setw(SWL_DETECTOR)<<"---- |"
                 <<std::setw(SWL_DESCRIPTOR)<<"---- |"
                     <<std::setw(SWL_TL_KEYPOINTS)<<"---- |"<<std::setw(SWL_TIME_P_KEYP)<<"---- |"
                         <<std::setw(SWL_TL_MATCHES)<<"---- |"<<std::setw(SWL_TIME_P_MATCH)<<std::right <<"---- |"
                             <<std::setw(SWL_TL_PPLIN_TME)<<"---- |"<<std::endl;
+
+        //Append the header for CSV file
+        resultFileCsv<<"Sl No, Detector, Descriptor, T Keypnts, Tme P Keypnt, T Matches, Tme P Mtch, Ttl tme 10 frms (s)"<<std::endl;
+
     }
 #endif //end _GENERATE_RESULTS_FILE_
 
@@ -210,16 +219,15 @@ int compareKeypointMatching()
     {
         for (int iDescriptorIndex = descriptor_BRISK; iDescriptorIndex <= descriptor_SIFT; ++iDescriptorIndex)
         {
-
-            if ((iDescriptorIndex == descriptor_AKAZE && iDetectorIndex != detector_AKAZE) ||
-                (iDescriptorIndex == descriptor_ORB   && iDetectorIndex == detector_SIFT) )
-
+            //https://answers.opencv.org/question/5542/sift-feature-descriptor-doesnt-work-with-orb-keypoinys/
+            // SIFT detetor does not work with ORB descriptor
+            // https://docs.opencv.org/3.0-beta/modules/features2d/doc/feature_detection_and_description.html#akaze
+            // For AKAZE descriptor extractor we have to only use AKAZE or KAZE detectors
+            //For all the combinations that dont work.. skip
+            if ((iDetectorIndex != detector_AKAZE && iDescriptorIndex == descriptor_AKAZE ) ||
+                (iDetectorIndex == detector_SIFT  && iDescriptorIndex == descriptor_ORB   ) )
             {
-                //https://answers.opencv.org/question/5542/sift-feature-descriptor-doesnt-work-with-orb-keypoinys/
-                // SIFT detetor does not ORB descriptor
-                // https://docs.opencv.org/3.0-beta/modules/features2d/doc/feature_detection_and_description.html#akaze
-                // For AKAZE descriptor extractor we have to only use AKAZE or KAZE detectors
-                continue;
+               continue;
             }
 
 #endif //end _testWithoutLoop_
@@ -227,8 +235,6 @@ int compareKeypointMatching()
             // Moving Data buffer inside the loop for reset of images for next set of pairs
             int dataBufferSize = 2;         // no. of images which are held in memory (ring buffer) at the same time
             vector<DataFrame> dataBuffer ;  // list of data frames which are held in memory at the same time
-
-
 
             //Unique strings for discriptor and detectors 
             string uniqueDetector   = get_right_of_delim(GetString((Detectors)iDetectorIndex), "detector_");
@@ -261,11 +267,9 @@ int compareKeypointMatching()
                 //CSV File for each pair of detectors and descriptors                
                 string csvPairFileName = uniqueDetector+underscoreExt+uniqueDescriptor+csvExtns;
 
-                //iCombinationIndex+1<<","
                 string perPairFilePath(matchedPath + csvPairFileName);
 
 
-                //std::ios::app|
                 perPairFile.open(perPairFilePath.c_str(),ios::out);
                 //Append the header
                 perPairFile<<"Img 1 Idx,"<<"Img 2 Idx,"<<"Img Kypnts,"<<"Mtchd Kypnts," <<"Mtchd tme tkn"<< std::endl; 
@@ -273,7 +277,7 @@ int compareKeypointMatching()
                 string csvKeypointsFileName = uniqueDetector+csvExtns;
                 string keypointFilePath(keypointsPath + csvKeypointsFileName);
 
-                std::cout<<"Generating files : "<<csvPairFileName<<"... "<<csvKeypointsFileName<<".."<<endl;
+                std::cout<<"\nGenerating files : "<<csvPairFileName<<"... "<<csvKeypointsFileName<<".."<<endl;
 
 
                 keyPointFile.open(keypointFilePath.c_str(),std::ios::app|ios::out);
@@ -290,16 +294,9 @@ int compareKeypointMatching()
 #endif //end _GENERATE_RESULTS_FILE_
 
 
-//#ifdef CodeNotCompile
-
             /* MAIN LOOP OVER ALL IMAGES */
             for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
             {
-                //For logging
-                if( bConsoleLogging ){
-                    cout <<"        1        : LOAD IMAGE INTO BUFFER" << endl;
-                    cout<< "Image Loop Index : "<< imgIndex << endl;
-                }
 
                 /* LOAD IMAGE INTO BUFFER */
                 // assemble filenames for current index
@@ -324,23 +321,13 @@ int compareKeypointMatching()
                 {
                     dataBuffer.erase(dataBuffer.begin());
                 }                
-                //// EOF STUDENT ASSIGNMENT
-
-                //For logging
-                if( bConsoleLogging ){
-                    cout<< "Databuffer Size  : "<< dataBuffer.size() << endl;
-                    cout << "        2        : DETECT IMAGE KEYPOINTS" << endl;
-                }
-                
+                //// EOF STUDENT ASSIGNMENT                
 
                 /* DETECT IMAGE KEYPOINTS */
                 //// STUDENT ASSIGNMENT
                 //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based 
                 ////  selection based on detectorType
                 //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
-                if( bConsoleLogging ){
-                    std::cout<< "Detector Type    : " << uniqueDetector << endl;
-                }
 
                 // extract 2D keypoints from current image
                 vector<cv::KeyPoint> keypoints; // create empty feature list for current image
@@ -352,22 +339,19 @@ int compareKeypointMatching()
                 //Note: Replaced the switch with a function to clean up the code
                 detectorTime = detectKeypoints(keypoints, imgGray, iDetectorIndex, bVis, bConsoleLogging);
 
-                //Since we remove the keypints later, which should be also acounted for total time
+                //Since we remove the keypints later, which should be also acounted for time per keypoint
                 keypointDetected = keypoints.size();
+
                 //Calculating the total keypoints
                 keypointTotal += keypointDetected;
                 
                 //Summing the detector time
                 totalDetectorTime += detectorTime;
-              
 
-                if( bConsoleLogging ){
-                    cout << "--------2--------: Done" << endl;                
                 //// EOF STUDENT ASSIGNMENT
                 //// STUDENT ASSIGNMENT
                 //// TASK MP.3 -> only keep keypoints on the preceding vehicle
-                    cout << "        3        : RETAIN BBOX KEYPOINTS" << endl;
-                }
+
                 // only keep keypoints on the preceding vehicle
                 bool bFocusOnVehicle = true;                
                 //Vehicle Bounding box
@@ -453,17 +437,11 @@ int compareKeypointMatching()
                     // there is no response info, so keep the first 50 as they are sorted in descending quality order
                     keypoints.erase(keypoints.begin() + maxKeypoints, keypoints.end());
                     cv::KeyPointsFilter::retainBest(keypoints, maxKeypoints);
-                    if( bConsoleLogging ){
-                        cout << "Note             : Keypoints have been limited!" << endl;
-                    }
                 }
                 // Keypoints of the current frame are assigned to the last item in the buffer 
                 // push keypoints and descriptor for current frame to end of data buffer
                 (dataBuffer.end() - 1)->keypoints = keypoints;                
-                if( bConsoleLogging ){
-                    cout << "--------3--------: Done" << endl;
-                    cout << "        4        : EXTRACT DESCRIPTORS" << endl;
-                }
+
                 /* EXTRACT KEYPOINT DESCRIPTORS */
                 //// STUDENT ASSIGNMENT
                 //// TASK MP.4 -> add the following descriptors in file matching2D.cpp and enable string-based selection based on descriptorType
@@ -473,9 +451,6 @@ int compareKeypointMatching()
                 //Switch has been replaced by precomputed unique Descriptor and equated 
                 descriptorType = uniqueDescriptor;
 
-                if( bConsoleLogging ){   
-                    std::cout<< "Discriptor Type  : " << uniqueDescriptor << endl;       
-                }
                 //Descriptor time for accumulating the time taken by the descriptor extraction
                 descriptorTime = descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType, bConsoleLogging);                              
                 
@@ -486,28 +461,19 @@ int compareKeypointMatching()
                 
                 // push descriptors for current frame to end of data buffer
                 (dataBuffer.end() - 1)->descriptors = descriptors;
-                if( bConsoleLogging ){
-                    cout << "--------4--------: done" << endl;
-                    cout << "       5/6       : MATCH KEYPOINT DESCRIPTORS" << endl;
-                }                
+               
                 if (dataBuffer.size() > 1) // wait until at least two images have been processed
                 {
                     /* MATCH KEYPOINT DESCRIPTORS */
                     vector<cv::DMatch> matches;
-                    //string matcherType      = "MAT_BF";         // MAT_BF, MAT_FLANN //For SIFT MAT_FLANN
-                    
-                    
-                    //As discribed erlier, for SIFT based keypoints, L2 Norm and and FANN based methods used
+
+                    //string matcherType      = "MAT_BF";         // MAT_BF, MAT_FLANN //For SIFT MAT_FLANN                                       
+                    //As discribed erlier, for SIFT based keypoints, L2 Norm and and FANN based method used
                     //https://answers.opencv.org/question/10046/feature-2d-feature-matching-fails-with-assert-statcpp/
                     string matcherType      = CompatibleMatcherTypes((Descriptors)iDescriptorIndex);
 
                     string descriptorType   = "DES_BINARY";     // DES_BINARY, DES_HOG  
                     string selectorType     = "SEL_KNN";         // SEL_NN, SEL_KNN
-                    if( bConsoleLogging ){
-                        std::cout<< "Macher Type      : " << matcherType << endl;
-                        std::cout<< "Selector Type    : " << selectorType << endl;
-                    }
-
                     
                     //// STUDENT ASSIGNMENT//////////////////////////////////////////////////////////////////////////////////////////////////////////////////TODO, Uncomment Matcher
                     //// TASK MP.5 -> add FLANN matching in file matching2D.cpp
@@ -571,14 +537,8 @@ int compareKeypointMatching()
             } // eof loop over all images
 
 
-            //Total Pipeline time
+            //Total Pipeline time for 10 images
             totalPipelineTime = totalDetectorTime + totalDescriptorTime + totalMatcherTime;
-            if( bConsoleLogging )
-            {
-                cout << "Total time       : Detector + Descriptor + Matcher is " << totalPipelineTime << " ms \n";
-            }
-
-//#endif //CodeNotCompile
 
             //9. Log the time it takes for keypoint detection and descriptor extraction. The results must 
             // be entered into a spreadsheet and based on this data, the TOP3 detector / descriptor 
@@ -593,19 +553,27 @@ int compareKeypointMatching()
                 perPairFile.close();
                 keyPointFile.close();
 
-                //File for the total update of the run
-                //Append the new pair of data
+                //File for the total update of the run for a detector and discriptor pair in csv and text file
+                
+                //Append the new data to text file for readme
                 resultFile<<setw(SWL_SERIAL_NO-2)<<std::right<<iCombinationIndex+1<<" |"
                         <<std::setw(SWL_DETECTOR-2)<<std::right<<uniqueDetector<< " |"
                             <<std::setw(SWL_DESCRIPTOR-2)<<std::right<<uniqueDescriptor<<" |" 
                                 <<std::setw(SWL_TL_KEYPOINTS-2)<<std::right <<keypointTotal<<" |"<<std::setw(SWL_TIME_P_KEYP-2)<<std::right << ((keypointTotal!=0)?totalDetectorTime/keypointTotal:0)<<" |"
                                     <<std::setw(SWL_TL_MATCHES-2)<<std::right<<matchesTotal<<" |"<<std::setw(SWL_TIME_P_MATCH-2)<<std::right <<((matchesTotal!=0)?totalMatcherTime/matchesTotal:0)<<" |" 
                                         <<std::setw(SWL_TL_PPLIN_TME-2)<<std::right<<totalPipelineTime <<" |"<<std::endl;
+                
+                //CSV file for sorting the top based on different categories
+                resultFileCsv<<iCombinationIndex+1<<","<<uniqueDetector<<","<<uniqueDescriptor<<","
+                        <<keypointTotal<<","<<((keypointTotal!=0)?totalDetectorTime/keypointTotal:0)<<","
+                            <<matchesTotal<<","<<((matchesTotal!=0)?totalMatcherTime/matchesTotal:0)<<"," 
+                                <<totalPipelineTime<<std::endl;
             }
 #endif //end _GENERATE_RESULTS_FILE_
             
             std::cout<<"\nDetector Type    : " << uniqueDetector 
-                << "\nDiscriptor Type  : " << uniqueDescriptor <<"\nDone."<< endl;   
+                        << "\nDiscriptor Type  : " << uniqueDescriptor 
+                        <<"\nDone."<< endl;   
             //For index of the combination run
             iCombinationIndex++;
 
@@ -619,6 +587,7 @@ int compareKeypointMatching()
     if(bGenerateFiles)
     {
         //Close the file
+        std::cout<<"\nGenerating file  : FinalResults.txt... FinalResults.csv"<<std::endl;
         resultFile.close();
     }
 #endif //end _GENERATE_RESULTS_FILE_
@@ -668,9 +637,6 @@ int runKeypointMatching()
     int iCombinationIndex   = 0;     // Combination index for Sl number for the outer loop
     int iPrevDetector       = 0;
 
-    //Name of the files created
-    string resultFileName(resutBasePath + "FinalResults.txt");
-
 
     string detectorType     = "";
     string descriptorType   = "";       
@@ -705,9 +671,6 @@ int runKeypointMatching()
     int keypointDetected        = 0;
     int keypointTotal           = 0;  // Total keypoints
     int matchesTotal            = 0;  // Total matches
-
-
-
 
 
     /* MAIN LOOP OVER ALL IMAGES */
@@ -929,8 +892,9 @@ int runKeypointMatching()
         cout << "Total time       : Detector + Descriptor + Matcher is " << totalPipelineTime << " ms \n";
     }
     
-    std::cout<<"\nDetector Type    : " << uniqueDetector 
-        << "\nDiscriptor Type  : " << uniqueDescriptor <<"\nDone."<< endl;   
+    std::cout<<"\nDetector Type    : " << uniqueDetector
+                << "\nDiscriptor Type  : " << uniqueDescriptor 
+                <<"\nDone."<< std::endl;   
     //For index of the combination run
     iCombinationIndex++;
 
