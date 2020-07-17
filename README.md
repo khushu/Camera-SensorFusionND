@@ -4,7 +4,6 @@ Mid-term project for Camera module towards Udacity's Sensor Fusion nanao degree.
 
 <img src="images/keypoints.png" width="820" height="248" />
 
-
 Mid-term project is work towards the final project to design a real-time collision avoidance system with data from multiple sensors (Radar, Lidar, Camera) on a vehicle. 
 
 The aim of this project is to make a pipeline to compare different  detector / descriptor methods implemented in OpenCV, and recommend the best combination, in terms of speed of execution and number of matches. 
@@ -15,11 +14,13 @@ For the pipeline, there are 10 consecutive test images, pre-captured from a came
 
 
 **Observations and parts of the project:**
+
 The flow of the module has been modified, so that the code is a bit clean, with 2 seperate flows for task 1-6 with visuals to show the integration of the pipeline and 2nd generating the file for comparison and analysis of different  detector / descriptor of pairs. Also, because for generation of files, more expensive functions are called like file operartions and sort, which hinder the speed and can not have visual for testing.
 
 One flow runs all the detector / descriptor pair, and other runs one tyhe best with visuals.
 
 **MP.0 Mid-Term Report**
+
 Provide a Writeup / README that includes all the rubric points and how you addressed each one. You can submit your writeup as markdown or pdf.
 
 Created a README.md
@@ -27,6 +28,7 @@ Created a README.md
 **Done.**
 
 **MP.1 Data Buffer Optimization**
+
 Implement a vector for dataBuffer objects whose size does not exceed a limit (e.g. 2 elements). This can be achieved by pushing in new elements on one end and removing elements on the other end. 
 
 Using erase in a vector method to delete the first data element in the vactor to implement circular buffer of images. Works as per specification, No known issues.
@@ -43,6 +45,7 @@ if (dataBuffer.size() > dataBufferSize)
 **Done.**
 
 **MP.2 Keypoint Detection**
+
 Implement detectors HARRIS, FAST, BRISK, ORB, AKAZE, and SIFT and make them selectable by setting a string accordingly.
 
 All the detectors mentioned are working.
@@ -50,6 +53,7 @@ All the detectors mentioned are working.
 **Done.**
 
 **MP.3 Keypoint Removal**
+
 Remove all keypoints outside of a pre-defined rectangle and only use the keypoints within the rectangle for further processing. 
 
 All the keypoints outside the box are removed using contains method. 
@@ -66,6 +70,7 @@ if(!vehicleRect.contains((*i).pt))
 **Done.**
 
 **MP.4 Keypoint Descriptors**
+
 Implement descriptors BRIEF, ORB, FREAK, AKAZE and SIFT and make them selectable by setting a string accordingly.
 
 All the descriptors mentioned are working.
@@ -73,6 +78,7 @@ All the descriptors mentioned are working.
 **Done**
 
 **MP.5 Descriptor Matching**
+
 Implement FLANN matching as well as k-nearest neighbor selection. Both methods must be selectable using the respective strings in the main function. 
 
 Both FLANN matching and k-nearest neighbor are working, which can be selected by a string. 
@@ -80,6 +86,7 @@ Both FLANN matching and k-nearest neighbor are working, which can be selected by
 **Done.**
 
 **MP.6 Descriptor Distance Ratio**
+
 Use the K-Nearest-Neighbor matching to implement the descriptor distance ratio test, which looks at the ratio of best vs. second-best match to decide whether to keep an associated pair of keypoints.
 
 The descriptor distance ratio test to filter keypoints based on the distance ratio threshold set to 0.8.
@@ -87,6 +94,7 @@ The descriptor distance ratio test to filter keypoints based on the distance rat
 **Done.**
 
 **MP.7 Performance Evaluation 1**
+
 Count the number of keypoints on the preceding vehicle for all 10 images and take note of the distribution of their neighborhood size. Do this for all the detectors you have implemented. 
 
 A directory created inside results/keypoints, for all the keypoints, in which each keypoint extraction is a seperate file with number of keypoints detected, time taken per keypoint and distribution of neighborhood sizes for each keypoint extraction. Distribution has mean, median, and standard diviation information. 
@@ -106,6 +114,7 @@ ORB 		- 23.67
 
 
 **MP.8 Performance Evaluation 2**
+
 Count the number of matched keypoints for all 10 images using all possible combinations of detectors and descriptors. In the matching step, the BF approach is used with the descriptor distance ratio set to 0.8.
 
 A directory created inside results/matches, for all the matches, in which each of the detector / descriptor pair is a seperate file with number of matches detected per frame with respect to detected keypoints, time taken per match. 
@@ -116,6 +125,7 @@ Also, implemented descriptor distance ratio test with ratio threshold set to 0.8
 
 
 **MP.9 Performance Evaluation 3**
+
 Log the time it takes for keypoint detection and descriptor extraction. The results must be entered into a spreadsheet and based on this data, the TOP3 detector / descriptor combinations must be recommended as the best choice for our purpose of detecting keypoints on vehicles.
 
 
@@ -124,6 +134,7 @@ In results directory, 2 files gets created "FinalResults" which has same content
 **Done.**
 
 **Final result table**
+
 The executable if run in generating files mode (./2D_feature_tracking 1), generates a results directory, in parellel to build directory. Inside results directory, creates 2 more directories containing keypoints and matches files. Also, in results directory it creates FinalResults.csv/FinalResults.txt which has same content. Summary is shown below: 
 
 Result table for all the detector / descriptor pair methods, then sorting based on the speed and then number of matches to finally conclude.
@@ -190,6 +201,7 @@ Sl No | Rank | Detector | Descriptor | T Keypnts | Tme P Keypnt | Matches |  Tme
  ---- | ---- |     ---- |       ---- |      ---- |         ---- |    ---- |        ---- |            ---- |
 ```
 **Final recommendation:**
+
 In both Speed and number of matches, row with Sl No 12, comes 1st and outperforms other detector / descriptor methods.
 ```
 Detector	: FAST
