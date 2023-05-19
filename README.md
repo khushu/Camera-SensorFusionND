@@ -257,7 +257,7 @@ OR
 3. Compile: `cmake .. && make`
 4. Run it: `./2D_feature_tracking 0` or `./2D_feature_tracking 1`
 
- * `./2D_feature_tracking 0` - Runs with only visual and for only 10 frames 
+ * `./2D_feature_tracking 0` - Runs with only visuals and for only 10 frames 
  * `./2D_feature_tracking 1` - Runs with generating the files for all the detector / descriptor combinations
  * `./2D_feature_tracking`   - will take the default parameter of 1 and generate the files
 
